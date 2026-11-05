@@ -1,0 +1,93 @@
+{% extends "layout.html" %}
+
+{% block title %}管理登录 - 精甲醇厂家周编码系统{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-5 col-lg-4">
+        <div class="card industrial-card shadow-lg login-card">
+            <div class="card-body p-5">
+                <div class="text-center mb-4">
+                    <div class="login-icon mb-3">
+                        <i class="bi bi-shield-lock-fill display-1 text-warning"></i>
+                    </div>
+                    <h3 class="text-white">管理后台登录</h3>
+                    <p class="text-muted">请输入管理密码</p>
+                </div>
+
+                <form method="POST" action="/login">
+                    <div class="mb-4">
+                        <label for="password" class="form-label text-light">
+                            <i class="bi bi-key-fill"></i> 密码
+                        </label>
+                        <div class="input-group input-group-lg">
+                            <span class="input-group-text bg-dark border-secondary">
+                                <i class="bi bi-lock-fill text-warning"></i>
+                            </span>
+                            <input type="password"
+                                   class="form-control form-control-lg bg-dark text-light border-secondary"
+                                   id="password"
+                                   name="password"
+                                   placeholder="请输入密码"
+                                   required
+                                   autofocus>
+                        </div>
+                        <small class="form-text text-muted">
+                            <i class="bi bi-info-circle"></i> 默认密码：admin123
+                        </small>
+                    </div>
+
+                    <button type="submit" class="btn btn-warning btn-lg w-100 mb-3">
+                        <i class="bi bi-box-arrow-in-right"></i>
+                        登录
+                    </button>
+
+                    <div class="text-center">
+                        <a href="/" class="text-muted text-decoration-none">
+                            <i class="bi bi-arrow-left"></i> 返回首页
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- 登录提示 -->
+        <div class="card bg-transparent border-warning mt-3">
+            <div class="card-body">
+                <h6 class="text-warning">
+                    <i class="bi bi-lightbulb-fill"></i> 功能说明
+                </h6>
+                <ul class="text-light small mb-0">
+                    <li>管理厂家名单（增删）</li>
+                    <li>生成周编码</li>
+                    <li>查看历史记录</li>
+                    <li>修改管理密码</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.login-card {
+    margin-top: 50px;
+    border: 2px solid rgba(255, 193, 7, 0.3);
+}
+
+.login-icon {
+    animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+}
+
+.form-control:focus {
+    border-color: #ffc107;
+    box-shadow: 0 0 0 0.25rem rgba(255, 193, 7, 0.25);
+}
+</style>
+{% endblock %}

@@ -1,0 +1,221 @@
+{% extends "layout.html" %}
+
+{% block title %}首页 - 精甲醇厂家周编码系统{% endblock %}
+
+{% block content %}
+<!-- 头部信息卡片 -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card industrial-card shadow-lg">
+            <div class="card-header bg-gradient-primary">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h4 class="mb-0 text-white">
+                        <i class="bi bi-calendar-week-fill text-warning"></i>
+                        {{ year }}年第{{ week }}周编码映射表
+                    </h4>
+                    <span class="badge bg-warning text-dark fs-6">
+                        <i class="bi bi-building"></i> 厂家数：{{ total }}
+                    </span>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        {% if codes %}
+                        <p class="mb-2">
+                            <i class="bi bi-clock-fill text-success"></i>
+                            <strong>更新时间：</strong>{{ date }}
+                        </p>
+                        <p class="mb-0 text-warning">
+                            <i class="bi bi-exclamation-triangle-fill"></i>
+                            <strong>重要提示：</strong>该对照编码仅第{{ week }}周有效，过期失效！
+                        </p>
+                        {% else %}
+                        <p class="mb-0 text-muted">
+                            <i class="bi bi-info-circle-fill"></i>
+                            本周尚未生成编码，请点击右侧按钮生成
+                        </p>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-4 text-end">
+                        <div class="btn-group" role="group">
+                            <button class="btn btn-warning btn-lg" onclick="generateCodes()">
+                                <i class="bi bi-arrow-clockwise"></i>
+                                生成编码
+                            </button>
+                            {% if codes %}
+                            <button class="btn btn-success btn-lg" onclick="exportCodes()">
+                                <i class="bi bi-download"></i>
+                                导出
+                            </button>
+                            {% endif %}
+                            <button class="btn btn-secondary btn-lg" onclick="location.reload()">
+                                <i class="bi bi-arrow-repeat"></i>
+                                刷新
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 编码表格 -->
+<div class="row">
+    <div class="col-12">
+        <div class="card industrial-card shadow-lg">
+            <div class="card-header bg-dark">
+                <h5 class="mb-0 text-warning">
+                    <i class="bi bi-table"></i>
+                    编码对照表
+                </h5>
+            </div>
+            <div class="card-body p-0">
+                {% if codes %}
+                <div class="table-responsive">
+                    <table class="table table-hover table-industrial mb-0">
+                        <thead>
+                            <tr>
+                                <th style="width: 80px;" class="text-center">序号</th>
+                                <th>厂家名称</th>
+                                <th style="width: 150px;" class="text-center">编码</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in codes %}
+                            <tr class="fade-in" style="animation-delay: {{ loop.index * 0.02 }}s;">
+                                <td class="text-center">
+                                    <span class="badge bg-secondary">{{ "%02d"|format(item.index) }}</span>
+                                </td>
+                                <td>
+                                    <i class="bi bi-building text-primary"></i>
+                                    {{ item.supplier }}
+                                </td>
+                                <td class="text-center">
+                                    <span class="code-badge">{{ item.code }}</span>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-5">
+                    <div class="empty-state">
+                        <i class="bi bi-inbox display-1 text-muted"></i>
+                        <h4 class="mt-3 text-light">暂无编码数据</h4>
+                        <p class="text-muted">本周尚未生成编码，请点击"生成编码"按钮</p>
+                        <button class="btn btn-warning btn-lg mt-3" onclick="generateCodes()">
+                            <i class="bi bi-plus-circle"></i>
+                            立即生成
+                        </button>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 统计信息 -->
+{% if codes %}
+<div class="row mt-4">
+    <div class="col-md-4">
+        <div class="card bg-primary text-white shadow">
+            <div class="card-body text-center">
+                <i class="bi bi-building display-4"></i>
+                <h3 class="mt-2">{{ total }}</h3>
+                <p class="mb-0">厂家总数</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card bg-success text-white shadow">
+            <div class="card-body text-center">
+                <i class="bi bi-calendar-check display-4"></i>
+                <h3 class="mt-2">第{{ week }}周</h3>
+                <p class="mb-0">当前周数</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card bg-warning text-dark shadow">
+            <div class="card-body text-center">
+                <i class="bi bi-shield-check display-4"></i>
+                <h3 class="mt-2">已生成</h3>
+                <p class="mb-0">编码状态</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function generateCodes() {
+    if (!confirm('确定要生成本周编码吗？\n\n⚠️ 如果本周已有编码，将会被覆盖！')) {
+        return;
+    }
+
+    // 显示加载状态
+    const btn = event.target;
+    const originalHTML = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>生成中...';
+
+    fetch('/api/generate', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'}
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            alert('✅ ' + data.message);
+            location.reload();
+        } else {
+            alert('❌ 生成失败：' + data.message);
+            btn.disabled = false;
+            btn.innerHTML = originalHTML;
+        }
+    })
+    .catch(err => {
+        alert('❌ 请求失败：' + err);
+        btn.disabled = false;
+        btn.innerHTML = originalHTML;
+    });
+}
+
+function exportCodes() {
+    // 导出为文本
+    const year = {{ year }};
+    const week = {{ week }};
+    const date = '{{ date }}';
+
+    let text = `【${year}年第${week}周精甲醇厂家随机编码映射表】\n`;
+    text += `更新时间：${date}\n`;
+    text += `该对照编码仅第${week}周有效，过期失效！\n`;
+    text += `${'='.repeat(50)}\n\n`;
+
+    {% if codes %}
+    {% for item in codes %}
+    text += `{{ "%02d"|format(item.index) }}. {{ item.supplier }} → 【{{ item.code }}】\n`;
+    {% endfor %}
+    {% endif %}
+
+    // 创建下载
+    const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `精甲醇编码_${year}年第${week}周.txt`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+
+    alert('✅ 导出成功！');
+}
+</script>
+{% endblock %}

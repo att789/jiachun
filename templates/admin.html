@@ -1,0 +1,298 @@
+{% extends "layout.html" %}
+
+{% block title %}管理后台 - 精甲醇厂家周编码系统{% endblock %}
+
+{% block content %}
+<!-- 欢迎横幅 -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="alert alert-success shadow">
+            <h4 class="alert-heading">
+                <i class="bi bi-person-check-fill"></i> 欢迎，管理员！
+            </h4>
+            <p class="mb-0">您已成功登录管理后台，可以管理厂家名单、生成编码和修改密码。</p>
+        </div>
+    </div>
+</div>
+
+<!-- 统计卡片 -->
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="card bg-gradient-primary text-white shadow">
+            <div class="card-body text-center">
+                <i class="bi bi-building display-3"></i>
+                <h2 class="mt-2">{{ total_suppliers }}</h2>
+                <p class="mb-0">厂家总数</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card bg-gradient-success text-white shadow">
+            <div class="card-body text-center">
+                <i class="bi bi-clock-history display-3"></i>
+                <h2 class="mt-2">{{ history|length }}</h2>
+                <p class="mb-0">历史记录</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card bg-gradient-warning text-dark shadow">
+            <div class="card-body text-center">
+                <i class="bi bi-shield-check display-3"></i>
+                <h2 class="mt-2">已登录</h2>
+                <p class="mb-0">管理员状态</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 厂家管理 -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card industrial-card shadow-lg">
+            <div class="card-header bg-gradient-primary">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0 text-white">
+                        <i class="bi bi-building"></i> 厂家管理
+                    </h5>
+                    <button class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#addSupplierModal">
+                        <i class="bi bi-plus-circle"></i> 添加厂家
+                    </button>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
+                    <table class="table table-hover table-industrial">
+                        <thead class="sticky-top">
+                            <tr>
+                                <th style="width: 60px;">序号</th>
+                                <th>厂家名称</th>
+                                <th style="width: 100px;" class="text-center">操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for supplier in suppliers %}
+                            <tr>
+                                <td>{{ loop.index }}</td>
+                                <td>
+                                    <i class="bi bi-building text-primary"></i>
+                                    {{ supplier }}
+                                </td>
+                                <td class="text-center">
+                                    <button class="btn btn-danger btn-sm" onclick="deleteSupplier('{{ supplier }}')">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 快速操作 -->
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="card industrial-card shadow">
+            <div class="card-header bg-warning text-dark">
+                <h5 class="mb-0">
+                    <i class="bi bi-lightning-charge-fill"></i> 快速操作
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <button class="btn btn-success btn-lg" onclick="generateCodes()">
+                        <i class="bi bi-arrow-clockwise"></i> 生成本周编码
+                    </button>
+                    <a href="/history" class="btn btn-info btn-lg">
+                        <i class="bi bi-clock-history"></i> 查看历史记录
+                    </a>
+                    <button class="btn btn-secondary btn-lg" data-bs-toggle="modal" data-bs-target="#changePasswordModal">
+                        <i class="bi bi-key-fill"></i> 修改密码
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="card industrial-card shadow">
+            <div class="card-header bg-info text-dark">
+                <h5 class="mb-0">
+                    <i class="bi bi-clock-history"></i> 最近生成
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if history %}
+                <ul class="list-group list-group-flush">
+                    {% for record in history[:5] %}
+                    <li class="list-group-item bg-dark text-light border-secondary">
+                        <div class="d-flex justify-content-between">
+                            <span>
+                                <i class="bi bi-calendar-check text-success"></i>
+                                {{ record.year }}年第{{ record.week }}周
+                            </span>
+                            <small class="text-muted">{{ record.date }}</small>
+                        </div>
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% else %}
+                <p class="text-muted text-center mb-0">暂无历史记录</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 添加厂家模态框 -->
+<div class="modal fade" id="addSupplierModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content bg-dark text-light">
+            <div class="modal-header border-secondary">
+                <h5 class="modal-title">
+                    <i class="bi bi-plus-circle"></i> 添加厂家
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="addSupplierForm">
+                    <div class="mb-3">
+                        <label for="supplierName" class="form-label">厂家名称</label>
+                        <input type="text" class="form-control bg-dark text-light border-secondary"
+                               id="supplierName" placeholder="请输入厂家名称" required>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer border-secondary">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-primary" onclick="addSupplier()">确认添加</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 修改密码模态框 -->
+<div class="modal fade" id="changePasswordModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content bg-dark text-light">
+            <div class="modal-header border-secondary">
+                <h5 class="modal-title">
+                    <i class="bi bi-key-fill"></i> 修改密码
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="changePasswordForm">
+                    <div class="mb-3">
+                        <label for="oldPassword" class="form-label">原密码</label>
+                        <input type="password" class="form-control bg-dark text-light border-secondary"
+                               id="oldPassword" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="newPassword" class="form-label">新密码</label>
+                        <input type="password" class="form-control bg-dark text-light border-secondary"
+                               id="newPassword" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="confirmPassword" class="form-label">确认新密码</label>
+                        <input type="password" class="form-control bg-dark text-light border-secondary"
+                               id="confirmPassword" required>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer border-secondary">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-warning" onclick="changePassword()">确认修改</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function generateCodes() {
+    if (!confirm('确定要生成本周编码吗？')) return;
+
+    fetch('/api/generate', { method: 'POST' })
+        .then(res => res.json())
+        .then(data => {
+            alert(data.success ? '✅ ' + data.message : '❌ ' + data.message);
+            if (data.success) location.reload();
+        });
+}
+
+function addSupplier() {
+    const name = document.getElementById('supplierName').value.trim();
+    if (!name) {
+        alert('❌ 请输入厂家名称');
+        return;
+    }
+
+    fetch('/api/suppliers/add', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({name})
+    })
+    .then(res => res.json())
+    .then(data => {
+        alert(data.success ? '✅ ' + data.message : '❌ ' + data.message);
+        if (data.success) location.reload();
+    });
+}
+
+function deleteSupplier(name) {
+    if (!confirm(`确定要删除厂家"${name}"吗？`)) return;
+
+    fetch('/api/suppliers/delete', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({name})
+    })
+    .then(res => res.json())
+    .then(data => {
+        alert(data.success ? '✅ ' + data.message : '❌ ' + data.message);
+        if (data.success) location.reload();
+    });
+}
+
+function changePassword() {
+    const oldPassword = document.getElementById('oldPassword').value;
+    const newPassword = document.getElementById('newPassword').value;
+    const confirmPassword = document.getElementById('confirmPassword').value;
+
+    if (!oldPassword || !newPassword || !confirmPassword) {
+        alert('❌ 请填写完整');
+        return;
+    }
+
+    if (newPassword !== confirmPassword) {
+        alert('❌ 两次输入的新密码不一致');
+        return;
+    }
+
+    if (newPassword.length < 6) {
+        alert('❌ 新密码长度至少6位');
+        return;
+    }
+
+    fetch('/api/password/change', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({old_password: oldPassword, new_password: newPassword})
+    })
+    .then(res => res.json())
+    .then(data => {
+        alert(data.success ? '✅ ' + data.message : '❌ ' + data.message);
+        if (data.success) {
+            bootstrap.Modal.getInstance(document.getElementById('changePasswordModal')).hide();
+            document.getElementById('changePasswordForm').reset();
+        }
+    });
+}
+</script>
+{% endblock %}
